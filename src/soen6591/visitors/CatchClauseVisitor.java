@@ -3,13 +3,11 @@ package soen6591.visitors;
 
 import org.eclipse.jdt.core.dom.Expression;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Block;
@@ -21,6 +19,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.ThrowStatement;
+import org.eclipse.jdt.core.dom.TryStatement;
 import org.eclipse.jdt.core.dom.Type;
 
 import soen6591.bugInstances.DestructiveWrappingInstance;
@@ -129,7 +128,7 @@ public class CatchClauseVisitor extends ASTVisitor {
 				  for (Object exceptionType : thrownExceptionTypes) {
 					  String newExceptionTypeStr = ((Type) exceptionType).resolveBinding().getQualifiedName();
 					  //if it is indicated that the method being called throws a exception that is different from the exception being
-					  //caught in the catch block, we return true
+					  //caught initially in the catch block, then we return a bug instance
 					  if (!newExceptionTypeStr.equals(exceptionTypeStr))
 						  return new DestructiveWrappingInstance(classPath, exceptionTypeStr, newExceptionTypeStr,
 									node.getStartPosition(), methodInvocation.getStartPosition());
@@ -144,6 +143,21 @@ public class CatchClauseVisitor extends ASTVisitor {
 					  return bugInstance;
 				  }
 			  }
+		  } else if (((Statement) statement).getNodeType() == Statement.TRY_STATEMENT) {
+			  TryStatement tryStatement = (TryStatement) statement;
+			  //if we encounter another try statement, then get the catch clauses of this try statement
+			  List<?> catchClauses = tryStatement.catchClauses();
+			  
+			  for (Object catchClause : catchClauses) {
+				  //we get the type of exceptions that are caught by the corresponding catch clause
+				  String newExceptionTypeStr = ((CatchClause) catchClause).getException().getType().resolveBinding().getQualifiedName();
+				  
+				  //if the exception being caught is different that the one that was caught initially, then we return a bug instance
+				  if (!newExceptionTypeStr.equals(exceptionTypeStr))
+					  return new DestructiveWrappingInstance(classPath, exceptionTypeStr, newExceptionTypeStr,
+								node.getStartPosition(), tryStatement.getStartPosition());
+			  }
+			  
 		  }
 	  }
 	  return null;
