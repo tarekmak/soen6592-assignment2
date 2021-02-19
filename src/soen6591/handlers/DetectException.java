@@ -10,7 +10,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.JavaModelException;
 
 import soen6591.patterns.ExceptionFinder;
-import soen6591.patterns.MethodFinder;
 
 public class DetectException extends AbstractHandler {
 	 
@@ -19,28 +18,29 @@ public class DetectException extends AbstractHandler {
 	       IWorkspace workspace = ResourcesPlugin.getWorkspace();
 	       IWorkspaceRoot root = workspace.getRoot();
 	       IProject[] projects = root.getProjects();
-	      
+	       
+	       long start = System.currentTimeMillis();
+	       
 	       detectInProjects(projects);
+	       
+	       long timeElapsed = System.currentTimeMillis() - start;
+	       
+	       SampleHandler.printMessage(String.format("DONE DETECTING\nTIME ELAPSED: %d ms\nTOTAL NUMBER OF DESTRUCTIVE WRAPPING INSTANCES FALGGED: %d", 
+	    		   timeElapsed, ExceptionFinder.getDestructiveWrappingCount()));
 	      
-	       SampleHandler.printMessage("DONE DETECTING");
-	      
+	       ExceptionFinder.resetDestructiveWrappingCount();
+	       
 	       return null;
 	   }
 	 
 	   private void detectInProjects(IProject[] projects) {
 	       for(IProject project : projects) {
-	           SampleHandler.printMessage("DETECTING IN: " + project.getName());
+	           SampleHandler.printMessage(String.format("DETECTING IN PROJECT: %s\n", project.getName()));
 	           ExceptionFinder exceptionFinder = new ExceptionFinder();
-	           MethodFinder methodFinder = new MethodFinder();
 	          
 	           try {
-	              
-	               // 1. find how many methods
-	               methodFinder.findMethods(project);
-	              
-	               // 2. find the exceptions
 	               exceptionFinder.findExceptions(project);
-	              
+	               
 	           } catch (JavaModelException e) {
 	               e.printStackTrace();
 	           }  
