@@ -41,7 +41,7 @@ public class ExceptionFinder {
     	   
     	   SampleHandler.printMessage(String.format("DETECTING IN CLASS: %s\n...", classPath));
            CompilationUnit parsedCompilationUnit = parse(unit);
-           CatchClauseVisitor exceptionVisitor = new CatchClauseVisitor(classPath);
+           CatchClauseVisitor exceptionVisitor = new CatchClauseVisitor(classPath, parsedCompilationUnit);
            parsedCompilationUnit.accept(exceptionVisitor);
           
            printExceptions(exceptionVisitor);

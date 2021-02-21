@@ -29,10 +29,12 @@ public class CatchClauseVisitor extends ASTVisitor {
   HashSet<CatchClause> genericCatches = new HashSet<>();
   HashSet<DestructiveWrappingInstance> destructiveCatches = new HashSet<>();
   String classPath;
+  CompilationUnit cu;
  
-  public CatchClauseVisitor(String classPath) {
+  public CatchClauseVisitor(String classPath, CompilationUnit cu) {
 	  super();
 	  this.classPath = classPath;
+	  this.cu = cu;
   }
   
   @Override
@@ -87,7 +89,7 @@ public class CatchClauseVisitor extends ASTVisitor {
 			  
 			  if (!newExceptionTypeStr.equals(exceptionTypeStr))  
 				  return new DestructiveWrappingInstance(classPath, exceptionTypeStr, newExceptionTypeStr,
-							node.getStartPosition(), throwStatement.getStartPosition());
+							cu.getLineNumber(node.getStartPosition()), cu.getLineNumber(throwStatement.getStartPosition()));
 			  
 		  } else if (((Statement) statement).getNodeType() == Statement.EXPRESSION_STATEMENT) {
 			  Expression expr = ((ExpressionStatement) statement).getExpression();
@@ -115,8 +117,8 @@ public class CatchClauseVisitor extends ASTVisitor {
 			      parser.setResolveBindings(true);
 			      parser.setBindingsRecovery(true);
 			      parser.setStatementsRecovery(true);
-				  CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-				  MethodDeclaration methodDeclaration = (MethodDeclaration) cu.findDeclaringNode(methodBinding.getKey());
+				  CompilationUnit methodCu = (CompilationUnit) parser.createAST(null);
+				  MethodDeclaration methodDeclaration = (MethodDeclaration) methodCu.findDeclaringNode(methodBinding.getKey());
 				  
 				  //if we weren't able to find the method declaration, we move on to the next statement
 				  if (methodDeclaration == null)
@@ -131,7 +133,7 @@ public class CatchClauseVisitor extends ASTVisitor {
 					  //caught initially in the catch block, then we return a bug instance
 					  if (!newExceptionTypeStr.equals(exceptionTypeStr))
 						  return new DestructiveWrappingInstance(classPath, exceptionTypeStr, newExceptionTypeStr,
-									node.getStartPosition(), methodInvocation.getStartPosition());
+									cu.getLineNumber(node.getStartPosition()), cu.getLineNumber(methodInvocation.getStartPosition()));
 				  }
 				  
 				  //checking if a different exception is being thrown in the body of the method being called in the catch block
@@ -139,7 +141,7 @@ public class CatchClauseVisitor extends ASTVisitor {
 				  if (bugInstance != null) {
 					  //we need to change the problematic line position (i.e., the line that throws the exception), so it corresponds
 					  //to the line where the method is called in the java class being explored
-					  bugInstance.setProblematicLineStartLine(methodInvocation.getStartPosition());
+					  bugInstance.setProblematicLineStartLine(cu.getLineNumber(methodInvocation.getStartPosition()));
 					  return bugInstance;
 				  }
 			  }
@@ -155,7 +157,7 @@ public class CatchClauseVisitor extends ASTVisitor {
 				  //if the exception being caught is different that the one that was caught initially, then we return a bug instance
 				  if (!newExceptionTypeStr.equals(exceptionTypeStr))
 					  return new DestructiveWrappingInstance(classPath, exceptionTypeStr, newExceptionTypeStr,
-								node.getStartPosition(), tryStatement.getStartPosition());
+								cu.getLineNumber(node.getStartPosition()), cu.getLineNumber(tryStatement.getStartPosition()));
 			  }
 			  
 		  }
