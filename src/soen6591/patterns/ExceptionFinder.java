@@ -43,7 +43,7 @@ public class ExceptionFinder {
     	   IResource resource = unit.getResource();
     	   
     	   if (resource.getType() == IResource.FILE)
-    		   classPath = resource.getRawLocation().toString();
+    		   classPath = resource.getFullPath().toString();
     	   
     	   SampleHandler.printMessage(String.format("DETECTING IN CLASS: %s\n...", classPath));
            CompilationUnit parsedCompilationUnit = parse(unit);
