@@ -151,6 +151,7 @@ public class CatchClauseVisitor extends ASTVisitor {
 			  List<?> catchClauses = tryStatement.catchClauses();
 			  
 			  for (Object catchClause : catchClauses) {
+				  
 				  //we get the type of exceptions that are caught by the corresponding catch clause
 				  String newExceptionTypeStr = ((CatchClause) catchClause).getException().getType().resolveBinding().getQualifiedName();
 				  

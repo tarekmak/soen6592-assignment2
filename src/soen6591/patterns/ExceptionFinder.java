@@ -19,22 +19,23 @@ import soen6591.visitors.CatchClauseVisitor;
 public class ExceptionFinder {
 	
    //this method finds the exceptions in the project and and returns the number of exceptions flagged in the passed project
-   public int findExceptions(IProject project) throws JavaModelException {
-	   int destructivewrappingCountInstanceInProj = 0;
+   public HashSet<DestructiveWrappingInstance> findExceptions(IProject project) throws JavaModelException {
+	   //this set contains destructive wrapping instances flagged in the project passed that was passed as a parameter
+	   HashSet<DestructiveWrappingInstance> destructiveWrappingInstancesInProj = new HashSet<DestructiveWrappingInstance>();
 	   
        IPackageFragment[] packages = JavaCore.create(project).getPackageFragments();
  
        for(IPackageFragment mypackage : packages)
-           destructivewrappingCountInstanceInProj += findTargetCatchClauses(mypackage);
+           destructiveWrappingInstancesInProj.addAll(findTargetCatchClauses(mypackage));
        
-       return destructivewrappingCountInstanceInProj;
+       return destructiveWrappingInstancesInProj;
    }
  
-   //this method finds the target catch clause in the package passed and returns the number of bug instances found in the package
+   //this method finds the target catch clause in the package passed and returns the bug instances found in the package
    //(in our case, the number of destructive wrapping instances)
-   private int findTargetCatchClauses(IPackageFragment packageFragment) throws JavaModelException {
-	   //this variable represents the number of destructive wrapping instances in the package passed as a parameter
-	   int destructiveWrappingInstanceCountInFrag = 0;
+   private HashSet<DestructiveWrappingInstance> findTargetCatchClauses(IPackageFragment packageFragment) throws JavaModelException {
+	   //this set contains destructive wrapping instances flagged in the package passed that was passed as a parameter
+	   HashSet<DestructiveWrappingInstance> destructiveWrappingInstancesInFrag = new HashSet<DestructiveWrappingInstance>();
 	   
        for (ICompilationUnit unit : packageFragment.getCompilationUnits()) {
     	   
@@ -50,20 +51,20 @@ public class ExceptionFinder {
            CatchClauseVisitor exceptionVisitor = new CatchClauseVisitor(classPath, parsedCompilationUnit);
            parsedCompilationUnit.accept(exceptionVisitor);
            
-           int destrusctiveWrappingInstanceCountInClass = getExceptions(exceptionVisitor);
+           HashSet<DestructiveWrappingInstance> destructiveWrappingInstancesInClass = getExceptions(exceptionVisitor);
            
            SampleHandler.printMessage(String.format("\nDETECTING IN CLASS: Total destructive wrapping instances flagged in the %s class : %d\n",
-        		   classPath, destrusctiveWrappingInstanceCountInClass));
+        		   classPath, destructiveWrappingInstancesInClass.size()));
            
-           destructiveWrappingInstanceCountInFrag += destrusctiveWrappingInstanceCountInClass;
+           destructiveWrappingInstancesInFrag.addAll(destructiveWrappingInstancesInClass);
        }
        
-       return destructiveWrappingInstanceCountInFrag;
+       return destructiveWrappingInstancesInFrag;
    }
  
-   //this method prints the log statements from the exceptions and returns the number of exceptions found in the class
+   //this method prints the log statements from the exceptions and returns the exceptions found in the class
    //(in our case, only the destructive wrapping patterns)
-   private int getExceptions(CatchClauseVisitor visitor) {
+   private HashSet<DestructiveWrappingInstance> getExceptions(CatchClauseVisitor visitor) {
 //       SampleHandler.printMessage("__________________EMPTY CATCHES___________________");
 //       for(CatchClause statement: visitor.getEmptyCatches()) {
 //           SampleHandler.printMessage(statement.toString());
@@ -80,11 +81,11 @@ public class ExceptionFinder {
        for (DestructiveWrappingInstance statement : destructiveCatches)
     	   SampleHandler.printMessage(statement.getLogStatement());
        
-       int destructiveWrappingCount = destructiveCatches.size();
+//       int destructiveWrappingCount = destructiveCatches.size();
        
 //       addDestructiveWrappingCount(destructiveWrappingCount);
        
-       return destructiveWrappingCount;
+       return destructiveCatches;
    }
  
 //   public void addDestructiveWrappingCount(int n) {
