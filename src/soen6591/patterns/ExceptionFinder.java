@@ -5,13 +5,11 @@ import java.util.HashSet;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import soen6591.bugInstances.DestructiveWrappingInstance;
@@ -19,17 +17,25 @@ import soen6591.handlers.SampleHandler;
 import soen6591.visitors.CatchClauseVisitor;
 
 public class ExceptionFinder {
-   private static int n_destructiveWrapper = 0;
 	
-   public void findExceptions(IProject project) throws JavaModelException {
+   //this method finds the exceptions in the project and and returns the number of exceptions flagged in the passed project
+   public int findExceptions(IProject project) throws JavaModelException {
+	   int destructivewrappingCountInstanceInProj = 0;
+	   
        IPackageFragment[] packages = JavaCore.create(project).getPackageFragments();
  
-       for(IPackageFragment mypackage : packages){
-           findTargetCatchClauses(mypackage);
-       }      
+       for(IPackageFragment mypackage : packages)
+           destructivewrappingCountInstanceInProj += findTargetCatchClauses(mypackage);
+       
+       return destructivewrappingCountInstanceInProj;
    }
  
-   private void findTargetCatchClauses(IPackageFragment packageFragment) throws JavaModelException {
+   //this method finds the target catch clause in the package passed and returns the number of bug instances found in the package
+   //(in our case, the number of destructive wrapping instances)
+   private int findTargetCatchClauses(IPackageFragment packageFragment) throws JavaModelException {
+	   //this variable represents the number of destructive wrapping instances in the package passed as a parameter
+	   int destructiveWrappingInstanceCountInFrag = 0;
+	   
        for (ICompilationUnit unit : packageFragment.getCompilationUnits()) {
     	   
     	   //getting the path of the java class being parsed
@@ -43,13 +49,21 @@ public class ExceptionFinder {
            CompilationUnit parsedCompilationUnit = parse(unit);
            CatchClauseVisitor exceptionVisitor = new CatchClauseVisitor(classPath, parsedCompilationUnit);
            parsedCompilationUnit.accept(exceptionVisitor);
-          
-           printExceptions(exceptionVisitor);
+           
+           int destrusctiveWrappingInstanceCountInClass = getExceptions(exceptionVisitor);
+           
+           SampleHandler.printMessage(String.format("\nDETECTING IN CLASS: Total destructive wrapping instances flagged in the %s class : %d\n",
+        		   classPath, destrusctiveWrappingInstanceCountInClass));
+           
+           destructiveWrappingInstanceCountInFrag += destrusctiveWrappingInstanceCountInClass;
        }
-      
+       
+       return destructiveWrappingInstanceCountInFrag;
    }
  
-   private void printExceptions(CatchClauseVisitor visitor) {
+   //this method prints the log statements from the exceptions and returns the number of exceptions found in the class
+   //(in our case, only the destructive wrapping patterns)
+   private int getExceptions(CatchClauseVisitor visitor) {
 //       SampleHandler.printMessage("__________________EMPTY CATCHES___________________");
 //       for(CatchClause statement: visitor.getEmptyCatches()) {
 //           SampleHandler.printMessage(statement.toString());
@@ -68,22 +82,22 @@ public class ExceptionFinder {
        
        int destructiveWrappingCount = destructiveCatches.size();
        
-       addDestructiveWrappingCount(destructiveWrappingCount);
+//       addDestructiveWrappingCount(destructiveWrappingCount);
        
-       SampleHandler.printMessage(String.format("\nTotal destructive wrapping instances flagged: %d\n", destructiveWrappingCount));
+       return destructiveWrappingCount;
    }
  
-   public void addDestructiveWrappingCount(int n) {
-	   n_destructiveWrapper += n;
-   }
-   
-   public static int getDestructiveWrappingCount() {
-	   return n_destructiveWrapper;
-   }
-   
-   public static void resetDestructiveWrappingCount() {
-	   n_destructiveWrapper = 0;
-   }
+//   public void addDestructiveWrappingCount(int n) {
+//	   n_destructiveWrapper += n;
+//   }
+//   
+//   public static int getDestructiveWrappingCount() {
+//	   return n_destructiveWrapper;
+//   }
+//   
+//   public static void resetDestructiveWrappingCount() {
+//	   n_destructiveWrapper = 0;
+//   }
    
    private CompilationUnit parse(ICompilationUnit unit) {
        ASTParser parser = ASTParser.newParser(AST.JLS15);
