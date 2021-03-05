@@ -56,7 +56,7 @@ public class DetectException extends AbstractHandler {
        for(IProject project : projects) {
            SampleHandler.printMessage(String.format("DETECTING IN PROJECT: %s\n", project.getName()));
            ExceptionFinder exceptionFinder = new ExceptionFinder();
-          
+
            try {
         	   HashSet<DestructiveWrappingInstance> destructivewrappingCountInstanceInProj = exceptionFinder.findExceptions(project);
                
@@ -114,6 +114,8 @@ public class DetectException extends AbstractHandler {
 		   sb.append(",");
 		   sb.append("Line of the statement that throws the exception of the other type");
 		   sb.append(",");
+		   sb.append("Type of destructive wrapping instance");
+		   sb.append(",");
 		   sb.append("Type of the exception initialy caught");
 		   sb.append(",");
 		   sb.append("Type of the exception thrown");
@@ -132,6 +134,8 @@ public class DetectException extends AbstractHandler {
 				   sb.append(destructiveWrappingInstance.getCatchClauseStartLine());
 				   sb.append(",");
 				   sb.append(destructiveWrappingInstance.getProblematicLineStartLine());
+				   sb.append(",");
+				   sb.append(destructiveWrappingInstance.getTypeOfInstance());
 				   sb.append(",");
 				   sb.append(destructiveWrappingInstance.getInitialExceptionCaught());
 				   sb.append(",");

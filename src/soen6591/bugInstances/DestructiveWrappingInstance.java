@@ -1,16 +1,15 @@
 package soen6591.bugInstances;
 
 public class DestructiveWrappingInstance {
-	private String classPath;
-	private String initialExceptionCaught;
-	private String newExceptionCaught;
+	private String classPath, initialExceptionCaught, newExceptionCaught, typeOfInstance;
 	private int catchClauseStartLine, problematicLineStartLine;
 	
-	public DestructiveWrappingInstance(String classPath, String initialExceptionCaught, String newExceptionCaught,
+	public DestructiveWrappingInstance(String classPath, String initialExceptionCaught, String newExceptionCaught, String typeOfInstance,
 			int catchClauseStartLine, int problematicLineStartLine) {
 		this.setClassPath(classPath);
 		this.setInitialExceptionCaught(initialExceptionCaught);
 		this.setNewExceptionCaught(newExceptionCaught);
+		this.setTypeOfInstance(typeOfInstance);
 		this.setCatchClauseStartLine(catchClauseStartLine);
 		this.setProblematicLineStartLine(problematicLineStartLine);
 	}
@@ -60,4 +59,13 @@ public class DestructiveWrappingInstance {
 	void setCatchClauseStartLine(int catchClauseStartLine) {
 		this.catchClauseStartLine = catchClauseStartLine;
 	}
+
+	public String getTypeOfInstance() {
+		return typeOfInstance;
+	}
+
+	public void setTypeOfInstance(String typeOfInstance) {
+		this.typeOfInstance = typeOfInstance;
+	}
+
 }
