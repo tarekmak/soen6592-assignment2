@@ -65,41 +65,14 @@ public class ExceptionFinder {
    //this method prints the log statements from the exceptions and returns the exceptions found in the class
    //(in our case, only the destructive wrapping patterns)
    private HashSet<DestructiveWrappingInstance> getExceptions(CatchClauseVisitor visitor) {
-//       SampleHandler.printMessage("__________________EMPTY CATCHES___________________");
-//       for(CatchClause statement: visitor.getEmptyCatches()) {
-//           SampleHandler.printMessage(statement.toString());
-//       }
-//      
-//       SampleHandler.printMessage("__________________GENERIC CATCHES___________________");
-//       for(CatchClause statement: visitor.getGenericCatches()) {
-////    	   ICompilationUnit unit = (ICompilationUnit) statement.getJavaElement().getAncestor(IJavaElement.COMPILATION_UNIT);
-//           SampleHandler.printMessage(statement.toString());
-//       }
-	   
-//	   SampleHandler.printMessage("__________________DESTRUCTIVE WRAPPING___________________");
+
        HashSet<DestructiveWrappingInstance> destructiveCatches = visitor.getDestructiveCatches();
        for (DestructiveWrappingInstance statement : destructiveCatches)
     	   SampleHandler.printMessage(statement.getLogStatement());
        
-//       int destructiveWrappingCount = destructiveCatches.size();
-       
-//       addDestructiveWrappingCount(destructiveWrappingCount);
-       
        return destructiveCatches;
    }
- 
-//   public void addDestructiveWrappingCount(int n) {
-//	   n_destructiveWrapper += n;
-//   }
-//   
-//   public static int getDestructiveWrappingCount() {
-//	   return n_destructiveWrapper;
-//   }
-//   
-//   public static void resetDestructiveWrappingCount() {
-//	   n_destructiveWrapper = 0;
-//   }
-   
+
    private CompilationUnit parse(ICompilationUnit unit) {
        ASTParser parser = ASTParser.newParser(AST.JLS15);
        parser.setKind(ASTParser.K_COMPILATION_UNIT);
