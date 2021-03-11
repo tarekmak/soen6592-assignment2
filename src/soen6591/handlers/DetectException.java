@@ -66,6 +66,8 @@ public class DetectException extends AbstractHandler {
                		+ "instances flagged in the %s project: %d\n",
             		   project.getName(), destructivewrappingCountInstanceInProj.size()));
            } catch (JavaModelException e) {
+        	   //according to ibm, this exception can safely be ignored as it does not affect the functionality of the code
+        	   //(https://www.ibm.com/support/pages/java-model-exceptions-log)
                e.printStackTrace();
            }  
        }
